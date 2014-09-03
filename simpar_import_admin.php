@@ -1,5 +1,19 @@
 <?php  
-
+	
+	function getCategoriesPushForm($optionString){
+		$form = "";
+		$push_categories=explode(",", $optionString);
+        foreach ($push_categories as $push_category){
+	        if(!empty($push_category)){
+		        $catmp=explode("=", $push_category);
+		        $form.='<div>';
+		        $form.=wp_dropdown_categories(array('hide_empty' => 0, 'name' => 'simpar_matchingcategories[]', 'hierarchical' => true, 'show_option_none' => __('None'), 'selected' => $catmp[0], "echo" => 0));
+		        $form.=' => <input type="text" name="simpar_matchingChannels[]" value="'.$catmp[1].'" /></div>';
+	        }
+        }
+		return $form;
+	}
+	
     /////////////////////////////
     // Working with Parameters //
     /////////////////////////////
@@ -65,6 +79,19 @@
         else
             update_option('simpar_doNotIncludeChannel', 'false');
 
+		$tmpCategories=$_POST['simpar_matchingcategories'];
+		$tmpChannels=$_POST['simpar_matchingChannels'];
+		$tmpCatOutString="";
+		for($i=0; $i<count($tmpCategories); $i++){
+			if($tmpCategories[$i]!=-1&&!empty($tmpChannels[$i])){
+				if(!empty($tmpCatOutString))
+					$tmpCatOutString.=",";
+				$tmpCatOutString.=$tmpCategories[$i]."=".$tmpChannels[$i];
+			}
+		}
+		update_option('simpar_categoriesPushChannels', $tmpCatOutString);
+		$sppsCategoriesPushChannels=getCategoriesPushForm($tmpCatOutString);
+        
         $sppsPushChannels = trim($_POST['simpar_pushChannels'], " ");
         update_option('simpar_pushChannels', $sppsPushChannels);
 
@@ -105,6 +132,8 @@
             $sppsDiscardScheduledPosts = ' checked="checked"';
 
         $sppsPushChannels = get_option('simpar_pushChannels');
+        
+        $sppsCategoriesPushChannels = getCategoriesPushForm(get_option('simpar_categoriesPushChannels'));
 
         $sppsDoNotIncludeChannel = '';
         if (get_option('simpar_doNotIncludeChannel') == 'true') 
@@ -220,7 +249,23 @@
                                 <hr/>
                                 <table class="form-table">
                                     <tr valign="top">
-                                        <td scope="row"><label for="tablecell">Push channels</label></td>
+                                        <td scope="row"><label for="tablecell">Categories Push Channels</label></td>
+                                        <td>
+                                        	<div id="simpar_matchSelectorContainer">
+                                        		<?=$sppsCategoriesPushChannels?>
+	                                        	<div id="simpar_matchSelectorDiv">
+	                                        		<?
+	                                        			wp_dropdown_categories(array('hide_empty' => 0, 'name' => 'simpar_matchingcategories[]', 'hierarchical' => true, 'show_option_none' => __('None')));
+	                                        		?>
+	                                        		 => <input class="simpar_matchSelectorText" type="text" name="simpar_matchingChannels[]"/>
+	                                        	</div>
+                                        	</div>
+                                        	<p><input id="simpar_addCategory" type="button" class="button button-action" value="Add Category"/></p>
+                                            <p class="description">Insert here a channel for each category that you want include in the push. If a match is not found the channels below are included.</p>
+                                        </td>
+                                    </tr>
+                                    <tr valign="top">
+                                        <td scope="row"><label for="tablecell">Push channels fallback</label></td>
                                         <td><input type="text" name="simpar_pushChannels" placeholder="e.g. news,sports,tennis" value="<?php echo $sppsPushChannels; ?>" class="regular-text">
                                             <p class="description"><strong>Comma</strong> separated and <strong>without</strong> spaces, names for the channels you want to be receiving the notifications. If empty, global broadcast channel (GBC) is selected (GBC is an empty string).</p>
                                         </td>

@@ -309,6 +309,7 @@ function simpar_admin_actions() {
 
     add_menu_page("Simple Parse Push Service", "Simple Parse Push Service", 'manage_options', "Simple-Parse-Push-Service", "simpar_admin");
 	$pending_notf_page = add_submenu_page( "Simple-Parse-Push-Service", "Settings", "Settings", "manage_options", "Simple-Parse-Push-Service", "simpar_admin" );
+	add_action( "admin_head-{$pending_notf_page}", 'my_admin_main_head_script' );
 	$pending_notf_page = add_submenu_page( "Simple-Parse-Push-Service", "Pending Notifications", "Pending Notifications", "manage_options", "spps_pending_notifications", "simpar_submenu" );
 	add_action( "admin_head-{$pending_notf_page}", 'my_admin_head_script' );
 
@@ -325,6 +326,10 @@ function simpar_admin_actions() {
  * ============================================ */
 function my_admin_head_script() { 
 	wp_enqueue_script( 'admin-pending-notf-js', plugin_dir_url( __FILE__ ).'js/pendingNotificationsAdmin.js' );
+}
+
+function my_admin_main_head_script() {
+	wp_enqueue_script( 'simpar-admin-js', plugin_dir_url( __FILE__ ).'js/simpar_admin.js' );
 }
 
 
@@ -349,6 +354,8 @@ function simpar_plugin_on_uninstall(){
  	delete_option('simpar_hide_warning');
  	delete_option('simpar_discardScheduledPosts');
  	delete_option('simpar_metabox_pt');
+ 	// push channel match option
+ 	delete_option('simpar_categoriesPushChannels');
     /*Remove any other options you may add in this plugin and clear any plugin cron jobs */
 }
   
