@@ -7,9 +7,11 @@
 	function getCategoriesPushForm($catChannelArray){
 		$form = "";
         foreach ($catChannelArray as $catChannel){
-	        $form.='<div>';
+	        $form.='<tr><td>';
 	        $form.=wp_dropdown_categories(array('hide_empty' => 0, 'name' => 'simpar_matchingcategories[]', 'hierarchical' => true, 'show_option_none' => __('None'), 'selected' => $catChannel->category, "echo" => 0));
-	        $form.=' => <input type="text" name="simpar_matchingChannels[]" value="'.$catChannel->channel.'" /></div>';
+	        $form.='</td><td><input type="text" name="simpar_matchingChannels[]" value="'.$catChannel->channel.'" /></td>
+	        <td><input type="button" class="button button-action simpar_delCategory" value="Remove"/></td>
+	        </tr>';
         }
 		return $form;
 	}
@@ -252,15 +254,20 @@
                                     <tr valign="top">
                                         <td scope="row"><label for="tablecell">Categories Push Channels</label></td>
                                         <td>
-                                        	<div id="simpar_matchSelectorContainer">
+                                        	<table id="simpar_matchSelectorContainer">
+                                        		<tr>
+                                        			<th>Category</th>
+                                        			<th>Channel</th>
+                                        		</tr>
                                         		<?=$sppsCategoriesPushChannels?>
-	                                        	<div id="simpar_matchSelectorDiv">
-	                                        		<?
+	                                        	<tr id="simpar_matchSelectorDiv">
+	                                        		<td><?
 	                                        			wp_dropdown_categories(array('hide_empty' => 0, 'name' => 'simpar_matchingcategories[]', 'hierarchical' => true, 'show_option_none' => __('None')));
-	                                        		?>
-	                                        		 => <input class="simpar_matchSelectorText" type="text" name="simpar_matchingChannels[]"/>
-	                                        	</div>
-                                        	</div>
+	                                        		?></td>
+	                                        		 <td><input class="simpar_matchSelectorText" type="text" name="simpar_matchingChannels[]"/></td>
+	                                        		 <td><input type="button" class="button button-action simpar_delCategory" value="Remove"/></td>
+	                                        	</tr>
+                                        	</table>
                                         	<p><input id="simpar_addCategory" type="button" class="button button-action" value="Add Category"/></p>
                                             <p class="description">Insert here a channel for each category that you want include in the push. If a match is not found the channels below are included.</p>
                                         </td>

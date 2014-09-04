@@ -5,6 +5,7 @@ jQuery(document).ready( function($) {
     var $matchContainer    = $('#simpar_matchSelectorContainer');
     var $matchDivMain = $('#simpar_matchSelectorDiv');
     var $addButton = $('#simpar_addCategory');
+    var $delButton = $('.simpar_delCategory');
 
 
 	/*
@@ -21,6 +22,10 @@ jQuery(document).ready( function($) {
         clonedDiv.removeAttr('id');
 		clonedDiv.find('.simpar_matchSelectorText').val("");
         clonedDiv.appendTo($matchContainer);
+    });
+    
+    $delButton.live("click",function(event) {  
+        $(this).closest("tr").remove();
     });
 
 });
