@@ -204,6 +204,29 @@ function metaboxParamsFilter($post_ID) {
 	$returnArray['post_id'] = $incPostID;
 	return $returnArray;
 }
+////////////////////////////////////////////////
+// find match between categories and channels //
+////////////////////////////////////////////////
+
+function simpar_match_categories_channels($post_ID){
+	//get categories of the post
+	$categories = get_the_category($post_ID);
+	// load category/match/channel
+	$categoriesChannelsMatch=json_decode(get_option('simpar_categoriesPushChannels'));
+	$out="";
+	foreach($categories as $category){
+		foreach($categoriesChannelsMatch as $catChanMatch){
+			//if a matching category is found add the channel to the output
+			if($category->cat_ID==$catChanMatch->category){
+				if(!empty($out))
+					$out.=",";
+				$out.=$catChanMatch->channel;
+			}	
+		}
+	}
+	//if there's no match return false
+	return (!empty($out) ? $out : false);
+}
 
 ////////////////////////////
 // send push notification //
@@ -217,9 +240,15 @@ function simpar_send_post($post_ID) {
 	$values = metaboxParamsFilter($post_ID);
 	if ($values == null)
 		return $post_ID;
-
+	
+	// look if the category selected match a channel
+	$pushChannels=simpar_match_categories_channels($post_ID);
+	// if there isn't a match fallback to 'simpar_pushChannels'
+	if($pushChannels===false)
+		$pushChannels=get_option('simpar_pushChannels');
+		
 	include('pushFunctionality.php');
-	sendPushNotification(get_option('simpar_appID'), get_option('simpar_restApi'), $values['message'], $values['badge'], $values['post_id'], get_option('simpar_pushChannels'));
+	sendPushNotification(get_option('simpar_appID'), get_option('simpar_restApi'), $values['message'], $values['badge'], $values['post_id'], $pushChannels);
 
     return $post_ID;
 }
@@ -237,8 +266,14 @@ function simpar_future_to_publish($post) {
 
     if ($index > -1) {
     	$tmpArray = $scheduledPosts[$index];
+    	// look if the category selected match a channel
+		$pushChannels=simpar_match_categories_channels($post->ID);
+		// if there isn't a match fallback to 'simpar_pushChannels'
+		if($pushChannels===false)
+			$pushChannels=get_option('simpar_pushChannels');
+			
 		include('pushFunctionality.php');
-		sendPushNotification(get_option('simpar_appID'), get_option('simpar_restApi'), $tmpArray['message'], $tmpArray['badge'], $post->ID, get_option('simpar_pushChannels'));
+		sendPushNotification(get_option('simpar_appID'), get_option('simpar_restApi'), $tmpArray['message'], $tmpArray['badge'], $post->ID,$pushChannels);
 
     	// remove the scheduled push...
     	unset( $scheduledPosts[$index] );
