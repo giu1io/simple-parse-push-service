@@ -4,11 +4,10 @@ function sendPushNotification($AppID, $RestApiKey, $AlertMessage, $Badge, $postI
 {
 	$url = 'https://api.parse.com/1/push/';
 	$data = array(
-	    'expiry' => 1451606400,
 	    'data' => array(
 	        'alert' => $AlertMessage,
 	        'badge' => $Badge,
-	    ),
+	    )
 	);
 
 	if (get_option('simpar_enableSound') == 'true') {
