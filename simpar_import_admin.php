@@ -1,15 +1,15 @@
 <?php  
 	
-	function getCategoriesPushForm($optionString){
+	/////////////////////
+	// Print Functions //
+	/////////////////////
+	
+	function getCategoriesPushForm($catChannelArray){
 		$form = "";
-		$push_categories=explode(",", $optionString);
-        foreach ($push_categories as $push_category){
-	        if(!empty($push_category)){
-		        $catmp=explode("=", $push_category);
-		        $form.='<div>';
-		        $form.=wp_dropdown_categories(array('hide_empty' => 0, 'name' => 'simpar_matchingcategories[]', 'hierarchical' => true, 'show_option_none' => __('None'), 'selected' => $catmp[0], "echo" => 0));
-		        $form.=' => <input type="text" name="simpar_matchingChannels[]" value="'.$catmp[1].'" /></div>';
-	        }
+        foreach ($catChannelArray as $catChannel){
+	        $form.='<div>';
+	        $form.=wp_dropdown_categories(array('hide_empty' => 0, 'name' => 'simpar_matchingcategories[]', 'hierarchical' => true, 'show_option_none' => __('None'), 'selected' => $catChannel->category, "echo" => 0));
+	        $form.=' => <input type="text" name="simpar_matchingChannels[]" value="'.$catChannel->channel.'" /></div>';
         }
 		return $form;
 	}
@@ -81,16 +81,17 @@
 
 		$tmpCategories=$_POST['simpar_matchingcategories'];
 		$tmpChannels=$_POST['simpar_matchingChannels'];
-		$tmpCatOutString="";
+		$tmpChannelMatchArray=array();
 		for($i=0; $i<count($tmpCategories); $i++){
 			if($tmpCategories[$i]!=-1&&!empty($tmpChannels[$i])){
-				if(!empty($tmpCatOutString))
-					$tmpCatOutString.=",";
-				$tmpCatOutString.=$tmpCategories[$i]."=".$tmpChannels[$i];
+				$tmpChannelMatch=new stdClass();
+				$tmpChannelMatch->category=$tmpCategories[$i];
+				$tmpChannelMatch->channel=$tmpChannels[$i];
+				array_push($tmpChannelMatchArray, $tmpChannelMatch);
 			}
 		}
-		update_option('simpar_categoriesPushChannels', $tmpCatOutString);
-		$sppsCategoriesPushChannels=getCategoriesPushForm($tmpCatOutString);
+		update_option('simpar_categoriesPushChannels', json_encode($tmpChannelMatchArray));
+		$sppsCategoriesPushChannels=getCategoriesPushForm($tmpChannelMatchArray);
         
         $sppsPushChannels = trim($_POST['simpar_pushChannels'], " ");
         update_option('simpar_pushChannels', $sppsPushChannels);
@@ -133,7 +134,7 @@
 
         $sppsPushChannels = get_option('simpar_pushChannels');
         
-        $sppsCategoriesPushChannels = getCategoriesPushForm(get_option('simpar_categoriesPushChannels'));
+        $sppsCategoriesPushChannels = getCategoriesPushForm(json_decode(get_option('simpar_categoriesPushChannels')));
 
         $sppsDoNotIncludeChannel = '';
         if (get_option('simpar_doNotIncludeChannel') == 'true') 
